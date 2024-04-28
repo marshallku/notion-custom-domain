@@ -6,7 +6,6 @@ pub struct Env {
     pub address: Cow<'static, str>,
     pub port: u16,
     pub host: Cow<'static, str>,
-    pub public_domain: Cow<'static, str>,
     pub notion_page_url: Cow<'static, str>,
 }
 
@@ -24,10 +23,6 @@ impl Env {
             Ok(host) => Cow::Owned(host),
             Err(_) => Cow::Owned("http://localhost/".to_string()),
         };
-        let public_domain = match std::env::var("PUBLIC_DOMAIN") {
-            Ok(public_domain) => Cow::Owned(public_domain),
-            Err(_) => panic!("PUBLIC_DOMAIN is required"),
-        };
         let notion_page_url = match std::env::var("NOTION_PAGE_URL") {
             Ok(notion_page_url) => Cow::Owned(notion_page_url),
             Err(_) => panic!("NOTION_PAGE_URL is required"),
@@ -37,7 +32,6 @@ impl Env {
             address,
             port,
             host,
-            public_domain,
             notion_page_url,
         }
     }
