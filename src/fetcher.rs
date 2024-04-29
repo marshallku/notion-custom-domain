@@ -7,13 +7,14 @@ use tracing::error;
 
 use crate::AppState;
 
-pub async fn make_response(
-    request: RequestBuilder,
-    request_headers: HeaderMap,
-    state: &AppState,
-) -> Response {
-    let mut filtered_headers = HeaderMap::new();
-    let headers_to_send = vec![
+fn remove_notion_url(body: String) -> String {
+    body.replace("https://www.notion.so", "http://localhost:3000")
+        .replace("https://notion.so", "http://localhost:3000")
+}
+
+fn build_request_header(origin_header: &HeaderMap) -> HeaderMap {
+    let mut headers = HeaderMap::new();
+    let headers_to_forward = vec![
         "User-Agent",
         "Accept",
         "Accept-Language",
@@ -24,30 +25,21 @@ pub async fn make_response(
         "Authorization",
     ];
 
-    for header in headers_to_send {
-        if let Some(value) = request_headers.get(header) {
-            filtered_headers.insert(header, value.clone());
+    for header in headers_to_forward {
+        if let Some(value) = origin_header.get(header) {
+            headers.insert(header, value.clone());
         }
     }
 
-    let response = match request.headers(filtered_headers).send().await {
-        Ok(response) => response,
-        Err(e) => {
-            error!("Error fetching data: {:?}", e);
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to fetch data".to_string(),
-            )
-                .into_response();
-        }
-    };
-    let status = response.status();
+    headers
+}
 
+fn build_response_header(origin_header: &HeaderMap, state: &AppState) -> HeaderMap {
     let mut headers = HeaderMap::new();
-    let headers_to_clone = vec!["Content-Type", "Cache-Control", "Set-Cookie"];
+    let headers_to_response = vec!["Content-Type", "Cache-Control", "Set-Cookie"];
 
-    for header in headers_to_clone {
-        if let Some(value) = response.headers().get(header) {
+    for header in headers_to_response {
+        if let Some(value) = origin_header.get(header) {
             if header == "Set-Cookie" {
                 let value = value
                     .to_str()
@@ -64,10 +56,33 @@ pub async fn make_response(
 
     headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
 
+    headers
+}
+
+pub async fn make_response(
+    request: RequestBuilder,
+    request_headers: HeaderMap,
+    state: &AppState,
+) -> Response {
+    let response = match request
+        .headers(build_request_header(&request_headers))
+        .send()
+        .await
+    {
+        Ok(response) => response,
+        Err(e) => {
+            error!("Error fetching data: {:?}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to fetch data".to_string(),
+            )
+                .into_response();
+        }
+    };
+    let status = response.status();
+    let headers = build_response_header(&response.headers(), &state);
     let body = match response.text().await {
-        Ok(body) => body
-            .replace("//www.notion.so", &format!("//{}", state.address))
-            .replace("//notion.so", &format!("//{}", state.address)),
+        Ok(body) => remove_notion_url(body),
         Err(e) => {
             error!("Error reading response body: {:?}", e);
             return (
