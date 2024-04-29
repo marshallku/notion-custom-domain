@@ -7,11 +7,6 @@ use tracing::error;
 
 use crate::AppState;
 
-fn remove_notion_url(body: String) -> String {
-    body.replace("https://www.notion.so", "http://localhost:3000")
-        .replace("https://notion.so", "http://localhost:3000")
-}
-
 fn build_request_header(origin_header: &HeaderMap) -> HeaderMap {
     let mut headers = HeaderMap::new();
     let headers_to_forward = vec![
@@ -59,11 +54,15 @@ fn build_response_header(origin_header: &HeaderMap, state: &AppState) -> HeaderM
     headers
 }
 
-pub async fn make_response(
+pub async fn make_response<F>(
     request: RequestBuilder,
     request_headers: HeaderMap,
     state: &AppState,
-) -> Response {
+    formatter: F,
+) -> Response
+where
+    F: Fn(String) -> String,
+{
     let response = match request
         .headers(build_request_header(&request_headers))
         .send()
@@ -82,7 +81,7 @@ pub async fn make_response(
     let status = response.status();
     let headers = build_response_header(&response.headers(), &state);
     let body = match response.text().await {
-        Ok(body) => remove_notion_url(body),
+        Ok(body) => formatter(body),
         Err(e) => {
             error!("Error reading response body: {:?}", e);
             return (
