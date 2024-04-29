@@ -16,8 +16,8 @@ impl Env {
             Err(_) => Cow::Owned("127.0.0.1".to_string()),
         };
         let port = match std::env::var("PORT") {
-            Ok(port) => port.parse().unwrap_or(41890),
-            Err(_) => 41890,
+            Ok(port) => port.parse().unwrap_or(48099),
+            Err(_) => 48099,
         };
         let host = match std::env::var("HOST") {
             Ok(host) => Cow::Owned(host),
