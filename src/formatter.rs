@@ -10,6 +10,12 @@ pub fn format_notion_page(body: String) -> String {
     <script>
     const observer = new MutationObserver(function() {
       window.history.replaceState({}, "", "/");
+
+      const topBar = document.querySelector(".notion-topbar");
+
+      if (topBar && topBar.parentElement instanceof HTMLElement) {
+        topBar.parentElement.remove();
+      }
     });
     observer.observe(document.getElementById("notion-app"), {
       childList: true,
