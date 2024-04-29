@@ -9,7 +9,7 @@ pub struct AppState {
     host: String,
     port: u16,
     address: String,
-    notion_page_url: String,
+    notion_page_id: String,
 }
 
 impl AppState {
@@ -20,13 +20,13 @@ impl AppState {
             host: env.host.into_owned(),
             port: env.port,
             address: env.address.into_owned(),
-            notion_page_url: env.notion_page_url.into_owned(),
+            notion_page_id: env.notion_page_id.into_owned(),
         }
     }
 }
 
 async fn handle_request(State(state): State<AppState>) -> impl IntoResponse {
-    state.notion_page_url.to_string().into_response()
+    state.notion_page_id.to_string().into_response()
 }
 
 #[tokio::main]
