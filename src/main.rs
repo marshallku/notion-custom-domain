@@ -11,7 +11,7 @@ use axum::{
     Router,
 };
 use http_body_util::BodyExt;
-use reqwest::{Client, Method};
+use reqwest::{Client, Method, StatusCode};
 use tokio;
 use tracing::info;
 
@@ -38,6 +38,22 @@ impl AppState {
 
 async fn redirect_to_notion(State(state): State<AppState>) -> impl IntoResponse {
     Redirect::permanent(&format!("/{}", state.notion_page_id))
+}
+
+async fn handle_page_request(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    let url = format!("{}/{}", state.host, state.notion_page_id);
+    let request = Client::new().request(Method::GET, url);
+    let response =
+        fetcher::make_response(request, headers, &state, formatter::format_notion_page).await;
+
+    if response.status() != StatusCode::OK {
+        return response;
+    }
+
+    response
 }
 
 async fn handle_path_requests(
@@ -81,6 +97,10 @@ async fn main() {
     let app = Router::new()
         .route("/", get(redirect_to_notion))
         .route("/*path", get(handle_path_requests))
+        .route(
+            &format!("/{}", state.notion_page_id),
+            get(handle_page_request),
+        )
         .route("/api/*path", post(handle_api_request))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(addr.as_str()).await.unwrap();
