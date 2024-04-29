@@ -10,6 +10,7 @@
     "codepoints",
     "hookform",
     "iname",
+    "KHTML",
     "libressl",
     "localforage",
     "Malgun",
@@ -33,5 +34,10 @@
     "WEBP",
     "xlink"
   ],
-  "ignorePaths": ["Cargo.lock", "Cargo.toml", "target", "config/nginx.conf"]
+  "ignorePaths": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "target",
+    "config/nginx.conf"
+  ]
 }
