@@ -1,0 +1,17 @@
+services:
+    notion-custom-domain:
+        container_name: notion-custom-domain
+        build: .
+        restart: unless-stopped
+        ports:
+            - ${PORT}:${PORT}
+        networks:
+            - app_network
+        env_file:
+            - .env
+        environment:
+            - BIND_ADDRESS=0.0.0.0
+
+networks:
+    app_network:
+        external: true
