@@ -5,7 +5,7 @@ use axum::{
     body::Body,
     extract::{Path, State},
     http::HeaderMap,
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
     routing::{get, post},
     Router,
 };
@@ -33,6 +33,10 @@ impl AppState {
             notion_page_id: env.notion_page_id.into_owned(),
         }
     }
+}
+
+async fn redirect_to_notion(State(state): State<AppState>) -> impl IntoResponse {
+    Redirect::permanent(&format!("/{}", state.notion_page_id))
 }
 
 async fn handle_request(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
@@ -81,8 +85,9 @@ async fn main() {
     let state = AppState::from_env();
     let addr = format!("{}:{}", state.address, state.port);
     let app = Router::new()
-        .route("/", get(handle_request))
+        .route("/", get(redirect_to_notion))
         .route("/*path", get(handle_path_requests))
+        .route(&format!("/{}", state.notion_page_id), get(handle_request))
         .route("/api/*path", post(handle_api_request))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(addr.as_str()).await.unwrap();
