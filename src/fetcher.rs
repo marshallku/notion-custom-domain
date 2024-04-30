@@ -54,6 +54,14 @@ fn build_response_header(origin_header: &HeaderMap, state: &AppState) -> HeaderM
     headers
 }
 
+fn error_response<E>(message: &str, error: E) -> Response
+where
+    E: std::fmt::Debug,
+{
+    error!("{}: {:?}", message, error);
+    (StatusCode::INTERNAL_SERVER_ERROR, message.to_string()).into_response()
+}
+
 pub async fn make_response<F>(
     request: RequestBuilder,
     request_headers: HeaderMap,
@@ -71,24 +79,17 @@ where
         Ok(response) => response,
         Err(e) => {
             error!("Error fetching data: {:?}", e);
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to fetch data".to_string(),
-            )
-                .into_response();
+            return error_response("Failed to fetch data", e);
         }
     };
     let status = response.status();
     let headers = build_response_header(&response.headers(), &state);
+
     let body = match response.text().await {
         Ok(body) => formatter(body, &state),
         Err(e) => {
             error!("Error reading response body: {:?}", e);
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to parse body".to_string(),
-            )
-                .into_response();
+            return error_response("Failed to read response body", e);
         }
     };
 
