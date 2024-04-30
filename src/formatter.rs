@@ -1,3 +1,5 @@
+use std::{borrow::Cow, env::var};
+
 use crate::AppState;
 
 pub fn remove_notion_url(body: String, state: &AppState) -> String {
@@ -36,10 +38,17 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
     </script>
     </body>
     "#;
-    let formatted = script
+    let inject_to_body = script
         .replace("{{external_address}}", state.external_address.as_str())
         .replace("{{origin_host}}", state.host.as_str())
         .replace("{{slug}}", state.notion_page_id.as_str());
+    let custom_head_string: Cow<String> = match var("INJECT_TO_HEAD") {
+        Ok(host) => Cow::Owned(host),
+        Err(_) => Cow::Owned("".to_string()),
+    };
+    let inject_to_head = custom_head_string.to_string() + "</head>";
 
-    remove_notion_url(body, &state).replace("</body>", &formatted)
+    remove_notion_url(body, &state)
+        .replace("</body>", &inject_to_body)
+        .replace("</head>", &inject_to_head)
 }
