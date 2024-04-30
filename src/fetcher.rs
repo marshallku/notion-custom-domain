@@ -61,7 +61,7 @@ pub async fn make_response<F>(
     formatter: F,
 ) -> Response
 where
-    F: Fn(String) -> String,
+    F: Fn(String, &AppState) -> String,
 {
     let response = match request
         .headers(build_request_header(&request_headers))
@@ -81,7 +81,7 @@ where
     let status = response.status();
     let headers = build_response_header(&response.headers(), &state);
     let body = match response.text().await {
-        Ok(body) => formatter(body),
+        Ok(body) => formatter(body, &state),
         Err(e) => {
             error!("Error reading response body: {:?}", e);
             return (

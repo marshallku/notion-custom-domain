@@ -1,10 +1,12 @@
-pub fn remove_notion_url(body: String) -> String {
+use crate::AppState;
+
+pub fn remove_notion_url(body: String, state: &AppState) -> String {
     body.replace("https://www.notion.so", "http://localhost:3000")
         .replace("https://notion.so", "http://localhost:3000")
 }
 
-pub fn format_notion_page(body: String) -> String {
-    remove_notion_url(body).replace(
+pub fn format_notion_page(body: String, state: &AppState) -> String {
+    remove_notion_url(body, &state).replace(
         "</body>",
         r#"
     <script>
