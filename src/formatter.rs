@@ -6,10 +6,11 @@ pub fn remove_notion_url(body: String, state: &AppState) -> String {
 }
 
 pub fn format_notion_page(body: String, state: &AppState) -> String {
-    remove_notion_url(body, &state).replace(
-        "</body>",
-        r#"
+    let script = r#"
     <script>
+    window.EXTERNAL_ADDRESS="{{external_address}}";
+    window.ORIGIN_HOST="{{origin_host}}";
+    window.SLUG="{{slug}}";
     const observer = new MutationObserver(function() {
       window.history.replaceState({}, "", "/");
 
@@ -25,6 +26,11 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
     });
     </script>
     </body>
-    "#,
-    )
+    "#;
+    let formatted = script
+        .replace("{{external_address}}", state.external_address.as_str())
+        .replace("{{origin_host}}", state.host.as_str())
+        .replace("{{slug}}", state.notion_page_id.as_str());
+
+    remove_notion_url(body, &state).replace("</body>", &formatted)
 }
