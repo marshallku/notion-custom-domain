@@ -11,6 +11,15 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
     window.EXTERNAL_ADDRESS="{{external_address}}";
     window.ORIGIN_HOST="{{origin_host}}";
     window.SLUG="{{slug}}";
+    window.CONFIG.domainBaseUrl = window.ORIGIN_HOST;
+    const replaceState = window.history.replaceState;
+    window.history.replaceState = function(state, title, url) {
+      if (url.includes(window.SLUG)) {
+        return;
+      }
+
+      return replaceState.apply(window.history, arguments);
+    };
     const observer = new MutationObserver(function() {
       window.history.replaceState({}, "", "/");
 
