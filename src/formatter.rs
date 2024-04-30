@@ -23,7 +23,7 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
     const observer = new MutationObserver(function() {
       window.history.replaceState({}, "", "/");
 
-      const topBar = document.querySelector(".notion-topbar");
+      const topBar = document.querySelector(".notion-topbar") || document.querySelector(".notion-topbar-mobile");
 
       if (topBar && topBar.parentElement instanceof HTMLElement) {
         topBar.parentElement.remove();
