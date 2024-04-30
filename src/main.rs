@@ -21,6 +21,7 @@ pub struct AppState {
     port: u16,
     address: String,
     notion_page_id: String,
+    external_address: String,
 }
 
 impl AppState {
@@ -32,6 +33,7 @@ impl AppState {
             port: env.port,
             address: env.address.into_owned(),
             notion_page_id: env.notion_page_id.into_owned(),
+            external_address: env.external_address.into_owned(),
         }
     }
 }

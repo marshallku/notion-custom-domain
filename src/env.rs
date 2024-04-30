@@ -7,6 +7,7 @@ pub struct Env {
     pub port: u16,
     pub host: Cow<'static, str>,
     pub notion_page_id: Cow<'static, str>,
+    pub external_address: Cow<'static, str>,
 }
 
 impl Env {
@@ -27,12 +28,17 @@ impl Env {
             Ok(notion_page_id) => Cow::Owned(notion_page_id),
             Err(_) => panic!("NOTION_PAGE_ID is required"),
         };
+        let external_address = match std::env::var("EXTERNAL_ADDRESS") {
+            Ok(external_address) => Cow::Owned(external_address),
+            Err(_) => panic!("EXTERNAL_ADDRESS is required"),
+        };
 
         Self {
             address,
             port,
             host,
             notion_page_id,
+            external_address,
         }
     }
 }

@@ -26,3 +26,4 @@ In order to run the application using `cargo run`, the `reqwest` library require
 - `PORT`: The port number for hosting.
 - `HOST`: The Notion origin URL.
 - `NOTION_PAGE_ID`: The ID of the Notion page.
+- `EXTERNAL_ADDRESS`: Actual external url for accessing application.
