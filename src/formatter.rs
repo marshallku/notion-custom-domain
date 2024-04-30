@@ -1,8 +1,8 @@
 use crate::AppState;
 
 pub fn remove_notion_url(body: String, state: &AppState) -> String {
-    body.replace("https://www.notion.so", "http://localhost:3000")
-        .replace("https://notion.so", "http://localhost:3000")
+    body.replace("https://www.notion.so", state.external_address.as_str())
+        .replace("https://notion.so", state.external_address.as_str())
 }
 
 pub fn format_notion_page(body: String, state: &AppState) -> String {
