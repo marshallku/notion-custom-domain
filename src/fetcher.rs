@@ -85,6 +85,13 @@ where
     let status = response.status();
     let headers = build_response_header(&response.headers(), &state);
 
+    // Check if it's an image response
+    if let Some(content_type) = response.headers().get("Content-Type") {
+        if content_type.to_str().map_or(false, |t| t.contains("image")) {
+            return (status, headers, response.bytes().await.unwrap()).into_response();
+        }
+    }
+
     let body = match response.text().await {
         Ok(body) => formatter(body, &state),
         Err(e) => {
