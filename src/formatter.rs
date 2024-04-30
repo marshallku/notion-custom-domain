@@ -30,6 +30,12 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
       if (topBar && topBar.parentElement instanceof HTMLElement) {
         topBar.parentElement.remove();
       }
+
+      const notionFrame = document.querySelector(".notion-frame");
+      
+      if (notionFrame) {
+        notionFrame.style.removeProperty("height")
+      }
     });
     observer.observe(document.getElementById("notion-app"), {
       childList: true,
