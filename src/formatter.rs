@@ -8,6 +8,10 @@ pub fn remove_notion_url(body: String, state: &AppState) -> String {
 }
 
 pub fn format_notion_page(body: String, state: &AppState) -> String {
+    let custom_body_string: Cow<String> = match var("INJECT_TO_BODY") {
+        Ok(tags) => Cow::Owned(tags),
+        Err(_) => Cow::Owned("".to_string()),
+    };
     let script = r#"
     <script>
     window.EXTERNAL_ADDRESS="{{external_address}}";
@@ -42,14 +46,16 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
       subtree: true,
     });
     </script>
+    {{custom_body_string}}
     </body>
     "#;
     let inject_to_body = script
         .replace("{{external_address}}", state.external_address.as_str())
         .replace("{{origin_host}}", state.host.as_str())
-        .replace("{{slug}}", state.notion_page_id.as_str());
+        .replace("{{slug}}", state.notion_page_id.as_str())
+        .replace("{{custom_body_string}}", custom_body_string.as_str());
     let custom_head_string: Cow<String> = match var("INJECT_TO_HEAD") {
-        Ok(host) => Cow::Owned(host),
+        Ok(tags) => Cow::Owned(tags),
         Err(_) => Cow::Owned("".to_string()),
     };
     let inject_to_head = custom_head_string.to_string() + "</head>";
