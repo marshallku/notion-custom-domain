@@ -27,3 +27,5 @@ In order to run the application using `cargo run`, the `reqwest` library require
 - `HOST`: The Notion origin URL.
 - `NOTION_PAGE_ID`: The ID of the Notion page.
 - `EXTERNAL_ADDRESS`: Actual external url for accessing application.
+- `INJECT_TO_HEAD`: Custom code to inject right before `</head>`
+- `INJECT_TO_BODY`: Custom code to inject right before `</body>`
