@@ -1,5 +1,6 @@
 mod env;
 mod fetcher;
+mod file;
 mod formatter;
 
 use axum::{
