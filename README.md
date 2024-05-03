@@ -27,5 +27,27 @@ In order to run the application using `cargo run`, the `reqwest` library require
 - `HOST`: The Notion origin URL.
 - `NOTION_PAGE_ID`: The ID of the Notion page.
 - `EXTERNAL_ADDRESS`: Actual external url for accessing application.
-- `INJECT_TO_HEAD`: Custom code to inject right before `</head>`
-- `INJECT_TO_BODY`: Custom code to inject right before `</body>`
+
+### Inject tags
+
+Place `head.html`, `body.html` files in the root directory. It should contain any HTML you wish to include at the end of the `<head>` or `<body>` section of the page.
+
+```html
+<style>
+    @font-face {
+        font-family: Pretendard-Regular;
+        src: url("https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff")
+            format("woff");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+    * {
+        font-family: Pretendard-Regular, ui-sans-serif, -apple-system,
+            BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji",
+            Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol" !important;
+    }
+</style>
+```
+
+For example, if you create `head.html` like above, you can modify font of your page.
