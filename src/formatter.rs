@@ -1,6 +1,4 @@
-use std::{borrow::Cow, env::var};
-
-use crate::AppState;
+use crate::{file::read_file, AppState};
 
 pub fn remove_notion_url(body: String, state: &AppState) -> String {
     body.replace("https://www.notion.so", state.external_address.as_str())
@@ -8,10 +6,7 @@ pub fn remove_notion_url(body: String, state: &AppState) -> String {
 }
 
 pub fn format_notion_page(body: String, state: &AppState) -> String {
-    let custom_body_string: Cow<String> = match var("INJECT_TO_BODY") {
-        Ok(tags) => Cow::Owned(tags),
-        Err(_) => Cow::Owned("".to_string()),
-    };
+    let custom_body_string = read_file("body.html").unwrap_or("".to_string());
     let script = r#"
     <script>
     window.EXTERNAL_ADDRESS="{{external_address}}";
@@ -54,10 +49,7 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
         .replace("{{origin_host}}", state.host.as_str())
         .replace("{{slug}}", state.notion_page_id.as_str())
         .replace("{{custom_body_string}}", custom_body_string.as_str());
-    let custom_head_string: Cow<String> = match var("INJECT_TO_HEAD") {
-        Ok(tags) => Cow::Owned(tags),
-        Err(_) => Cow::Owned("".to_string()),
-    };
+    let custom_head_string = read_file("head.html").unwrap_or("".to_string());
     let inject_to_head = custom_head_string.to_string() + "</head>";
 
     remove_notion_url(body, &state)
