@@ -1,8 +1,9 @@
 use crate::{file::read_file, AppState};
 
-pub fn remove_notion_url(body: String, state: &AppState) -> String {
+pub fn modify_notion_url(body: String, state: &AppState) -> String {
     body.replace("https://www.notion.so", state.external_address.as_str())
         .replace("https://notion.so", state.external_address.as_str())
+        .replace("/_assets/", "https://www.notion.so/_assets/")
 }
 
 pub fn format_notion_page(body: String, state: &AppState) -> String {
@@ -52,7 +53,7 @@ pub fn format_notion_page(body: String, state: &AppState) -> String {
     let custom_head_string = read_file("head.html").unwrap_or("".to_string());
     let inject_to_head = custom_head_string.to_string() + "</head>";
 
-    remove_notion_url(body, &state)
+    modify_notion_url(body, &state)
         .replace("</body>", &inject_to_body)
         .replace("</head>", &inject_to_head)
 }

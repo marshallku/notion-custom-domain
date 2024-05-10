@@ -68,7 +68,7 @@ async fn handle_path_requests(
     let url = format!("{}/{}", state.host, path);
     let request = Client::new().request(method, url);
 
-    fetcher::make_response(request, headers, &state, formatter::remove_notion_url).await
+    fetcher::make_response(request, headers, &state, formatter::modify_notion_url).await
 }
 
 async fn handle_api_request(
@@ -85,7 +85,7 @@ async fn handle_api_request(
     };
     let request = Client::new().request(method, url).body(request_body);
 
-    fetcher::make_response(request, headers, &state, formatter::remove_notion_url).await
+    fetcher::make_response(request, headers, &state, formatter::modify_notion_url).await
 }
 
 #[tokio::main]
