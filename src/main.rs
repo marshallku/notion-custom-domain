@@ -2,6 +2,9 @@ mod env;
 mod fetcher;
 mod file;
 mod formatter;
+mod http;
+
+use std::path::PathBuf;
 
 use axum::{
     body::Body,
@@ -71,6 +74,21 @@ async fn handle_path_requests(
     fetcher::make_response(request, headers, &state, formatter::modify_notion_url).await
 }
 
+async fn handle_assets_requests(Path(path): Path<String>) -> impl IntoResponse {
+    let location_path = format!("_assets/{}", path);
+    let file_path = PathBuf::from(format!("cache/{}", location_path));
+
+    if file_path.exists() {
+        return http::response_file(&file_path).await;
+    }
+
+    if let Err(_) = fetcher::fetch_and_cache_file(&file_path, &location_path).await {
+        return http::response_error(axum::http::StatusCode::NOT_FOUND);
+    }
+
+    http::response_file(&file_path).await
+}
+
 async fn handle_api_request(
     State(state): State<AppState>,
     Path(path): Path<String>,
@@ -100,6 +118,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(redirect_to_notion))
         .route("/*path", get(handle_path_requests))
+        .route("/_assets/*path", get(handle_assets_requests))
         .route(
             &format!("/{}", state.notion_page_id),
             get(handle_page_request),
