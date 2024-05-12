@@ -28,6 +28,8 @@
     "reqwest",
     "rfind",
     "Segoe",
+    "tempdir",
+    "tempfile",
     "topbar",
     "treeshake",
     "tsup",
