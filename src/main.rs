@@ -82,8 +82,14 @@ async fn handle_assets_requests(Path(path): Path<String>) -> impl IntoResponse {
         return http::response_file(&file_path).await;
     }
 
-    if let Err(_) = fetcher::fetch_and_cache_file(&file_path, &location_path).await {
-        return http::response_error(axum::http::StatusCode::NOT_FOUND);
+    let response = fetcher::fetch_file(&location_path).await;
+
+    if let Err(_) = response {
+        return http::response_error(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    if let Err(_) = file::write_file(&file_path, &response.unwrap()) {
+        return http::response_error(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
     http::response_file(&file_path).await

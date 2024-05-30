@@ -1,9 +1,5 @@
-use std::{
-    fs::{create_dir_all, write},
-    path::PathBuf,
-};
-
 use axum::{
+    body::Bytes,
     http::HeaderMap,
     response::{IntoResponse, Response},
 };
@@ -108,24 +104,14 @@ where
     (status, headers, body).into_response()
 }
 
-pub async fn fetch_and_cache_file(
-    file_path: &PathBuf,
-    location_path: &str,
-) -> Result<(), reqwest::Error> {
-    let url = format!("https://www.notion.so/{}", location_path);
-    let response = match Client::new().get(&url).send().await?.error_for_status() {
-        Ok(response) => response.bytes().await?,
+pub async fn fetch_file(path: &str) -> Result<Bytes, reqwest::Error> {
+    let url = format!("https://www.notion.so/{}", path);
+
+    match Client::new().get(&url).send().await {
+        Ok(response) => response.bytes().await,
         Err(err) => {
             error!("Failed to fetch {}", url);
             return Err(err);
         }
-    };
-
-    if let Some(parent) = file_path.parent() {
-        create_dir_all(parent).ok();
     }
-
-    write(file_path, &response).ok();
-
-    Ok(())
 }
