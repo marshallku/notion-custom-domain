@@ -30,6 +30,36 @@ mod tests {
     use tempfile::tempdir;
 
     #[tokio::test]
+    async fn test_write_file() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        let contents = Bytes::from("test");
+
+        write_file(&file_path, &contents).unwrap();
+
+        let mut file = File::open(file_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents).unwrap();
+
+        assert_eq!(file_contents, "test");
+    }
+
+    #[tokio::test]
+    async fn test_write_file_to_parent() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("parent/test.txt");
+        let contents = Bytes::from("test");
+
+        write_file(&file_path, &contents).unwrap();
+
+        let mut file = File::open(file_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents).unwrap();
+
+        assert_eq!(file_contents, "test");
+    }
+
+    #[tokio::test]
     async fn test_read_file() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.txt");
