@@ -1,4 +1,19 @@
-use std::{fs::File, io::Read};
+use std::{
+    fs::{create_dir_all, write, File},
+    io::Read,
+    path::PathBuf,
+};
+
+use axum::body::Bytes;
+
+pub fn write_file(file_path: &PathBuf, contents: &Bytes) -> Result<(), std::io::Error> {
+    if let Some(parent) = file_path.parent() {
+        create_dir_all(parent).ok();
+    }
+
+    write(file_path, &contents).ok();
+    Ok(())
+}
 
 pub fn read_file(file_path: &str) -> Result<String, std::io::Error> {
     let mut file = File::open(file_path)?;
