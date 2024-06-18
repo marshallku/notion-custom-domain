@@ -14,6 +14,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use dotenv::dotenv;
 use http_body_util::BodyExt;
 use reqwest::{Client, Method, StatusCode};
 use tokio;
@@ -118,6 +119,8 @@ async fn main() {
         .with_target(false)
         .compact()
         .init();
+
+    dotenv().ok();
 
     let state = AppState::from_env();
     let addr = format!("{}:{}", state.address, state.port);
