@@ -25,7 +25,8 @@ In order to run the application using `cargo run`, the `reqwest` library require
 - `BIND_ADDRESS`: The IP address the application will use for hosting.
 - `PORT`: The port number for hosting.
 - `HOST`: The Notion origin URL.
-- `NOTION_PAGE_ID`: The ID of the Notion page.
+- `ROUTE_PATHS`: The path to the Notion page (e.g. `/,/en`).
+- `NOTION_PAGES`: The ID of the Notion page (e.g. `a8461811a3044446a2048fc054001b9d,aae83820e0124d50906dc50a3fefef20`).
 - `EXTERNAL_ADDRESS`: Actual external url for accessing application.
 
 ### Inject tags

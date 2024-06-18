@@ -1,13 +1,15 @@
 use core::panic;
-use std::{borrow::Cow, env};
+use std::{borrow::Cow, collections::HashMap, env};
 
 #[derive(Clone, Debug)]
 pub struct Env {
     pub address: Cow<'static, str>,
     pub port: u16,
     pub host: Cow<'static, str>,
-    pub notion_page_id: Cow<'static, str>,
     pub external_address: Cow<'static, str>,
+    pub route_paths: Cow<'static, Vec<String>>,
+    pub notion_pages: Cow<'static, Vec<String>>,
+    pub path_to_notion_map: Cow<'static, HashMap<String, String>>,
 }
 
 impl Env {
@@ -24,21 +26,38 @@ impl Env {
             Ok(host) => Cow::Owned(host),
             Err(_) => Cow::Owned("http://localhost/".to_string()),
         };
-        let notion_page_id = match env::var("NOTION_PAGE_ID") {
-            Ok(notion_page_id) => Cow::Owned(notion_page_id),
-            Err(_) => panic!("NOTION_PAGE_ID is required"),
-        };
         let external_address = match env::var("EXTERNAL_ADDRESS") {
             Ok(external_address) => Cow::Owned(external_address),
             Err(_) => panic!("EXTERNAL_ADDRESS is required"),
         };
+        let route_paths = match env::var("ROUTE_PATHS") {
+            Ok(route_paths) => {
+                Cow::Owned::<Vec<_>>(route_paths.split(',').map(String::from).collect())
+            }
+            Err(_) => Cow::Owned(vec!["/".to_string()]),
+        };
+        let notion_pages = match env::var("NOTION_PAGES") {
+            Ok(notion_pages) => {
+                Cow::Owned::<Vec<_>>(notion_pages.split(',').map(String::from).collect())
+            }
+            Err(_) => panic!("NOTION_PAGES is required"),
+        };
+        let path_to_notion_map = Cow::Owned(
+            route_paths
+                .iter()
+                .cloned()
+                .zip(notion_pages.iter().cloned())
+                .collect::<HashMap<_, _>>(),
+        );
 
         Self {
             address,
             port,
             host,
-            notion_page_id,
             external_address,
+            route_paths,
+            notion_pages,
+            path_to_notion_map,
         }
     }
 }

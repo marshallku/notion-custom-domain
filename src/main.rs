@@ -4,7 +4,7 @@ mod file;
 mod formatter;
 mod http;
 
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use axum::{
     body::Body,
@@ -25,8 +25,9 @@ pub struct AppState {
     host: String,
     port: u16,
     address: String,
-    notion_page_id: String,
     external_address: String,
+    notion_pages: Vec<String>,
+    path_to_notion_map: HashMap<String, String>,
 }
 
 impl AppState {
@@ -37,30 +38,23 @@ impl AppState {
             host: env.host.into_owned(),
             port: env.port,
             address: env.address.into_owned(),
-            notion_page_id: env.notion_page_id.into_owned(),
             external_address: env.external_address.into_owned(),
+            notion_pages: env.notion_pages.into_owned(),
+            path_to_notion_map: env.path_to_notion_map.into_owned(),
         }
     }
 }
 
-async fn redirect_to_notion(State(state): State<AppState>) -> impl IntoResponse {
-    Redirect::permanent(&format!("/{}", state.notion_page_id))
-}
+async fn handle_index_page(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+    const PATH: &str = "/";
 
-async fn handle_page_request(
-    State(state): State<AppState>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
-    let url = format!("{}/{}", state.host, state.notion_page_id);
-    let request = Client::new().request(Method::GET, url);
-    let response =
-        fetcher::make_response(request, headers, &state, formatter::format_notion_page).await;
-
-    if response.status() != StatusCode::OK {
-        return response;
+    if !state.path_to_notion_map.contains_key(PATH) {
+        return (StatusCode::NOT_FOUND, headers).into_response();
     }
 
-    response
+    let notion_page_id = state.path_to_notion_map.get(PATH).unwrap();
+
+    return Redirect::permanent(&format!("/{}", notion_page_id)).into_response();
 }
 
 async fn handle_path_requests(
@@ -69,6 +63,23 @@ async fn handle_path_requests(
     method: Method,
     headers: HeaderMap,
 ) -> impl IntoResponse {
+    let actual_path = format!("/{}", path);
+
+    // Check if route path has path
+    if state.path_to_notion_map.contains_key(&actual_path) {
+        let notion_page_id = state.path_to_notion_map.get(&actual_path).unwrap();
+        return Redirect::permanent(&format!("/{}", notion_page_id)).into_response();
+    }
+
+    // Check if path is a notion page
+    if state.notion_pages.contains(&path) {
+        let url = format!("{}/{}", state.host, path);
+        let request = Client::new().request(Method::GET, url);
+
+        return fetcher::make_response(request, headers, &state, formatter::format_notion_page)
+            .await;
+    }
+
     let url = format!("{}/{}", state.host, path);
     let request = Client::new().request(method, url);
 
@@ -125,13 +136,9 @@ async fn main() {
     let state = AppState::from_env();
     let addr = format!("{}:{}", state.address, state.port);
     let app = Router::new()
-        .route("/", get(redirect_to_notion))
+        .route("/", get(handle_index_page))
         .route("/*path", get(handle_path_requests))
         .route("/_assets/*path", get(handle_assets_requests))
-        .route(
-            &format!("/{}", state.notion_page_id),
-            get(handle_page_request),
-        )
         .route("/api/*path", post(handle_api_request))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(addr.as_str()).await.unwrap();
