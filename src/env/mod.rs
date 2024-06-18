@@ -7,7 +7,6 @@ pub struct Env {
     pub port: u16,
     pub host: Cow<'static, str>,
     pub external_address: Cow<'static, str>,
-    pub route_paths: Cow<'static, Vec<String>>,
     pub notion_pages: Cow<'static, Vec<String>>,
     pub path_to_notion_map: Cow<'static, HashMap<String, String>>,
 }
@@ -55,7 +54,6 @@ impl Env {
             port,
             host,
             external_address,
-            route_paths,
             notion_pages,
             path_to_notion_map,
         }
