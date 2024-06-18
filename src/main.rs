@@ -1,9 +1,7 @@
 mod env;
-mod fetcher;
-mod file;
-mod formatter;
-mod http;
+mod utils;
 
+use crate::utils::{fetcher, file, formatter, http};
 use std::{collections::HashMap, path::PathBuf};
 
 use axum::{

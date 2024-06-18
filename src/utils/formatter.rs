@@ -1,4 +1,4 @@
-use crate::{file::read_file, AppState};
+use crate::{utils::file::read_file, AppState};
 use serde_json::to_string;
 
 pub fn modify_notion_url(body: String, state: &AppState) -> String {
